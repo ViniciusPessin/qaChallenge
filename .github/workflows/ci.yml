@@ -3,9 +3,9 @@ name: QA Automated Tests
 on:
   workflow_dispatch:
   push:
-    branches: [ main, develop ]
+    branches: [ master, develop ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
 
 jobs:
   # ────────────────────────────────────────────────
@@ -98,7 +98,7 @@ jobs:
     name: Performance Tests (BlazDemo)
     runs-on: ubuntu-latest
     # Roda apenas na branch main para não sobrecarregar o servidor alvo em PRs
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/master'
 
     steps:
       - name: Checkout código

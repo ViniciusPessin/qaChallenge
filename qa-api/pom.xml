@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>qa-api</artifactId>
-    <n>QA API Tests - Dog API</n>
+    <name>QA API Tests - Dog API</name>
 
     <dependencies>
         <!-- RestAssured: framework de testes de API REST -->

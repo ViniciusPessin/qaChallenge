@@ -11,7 +11,7 @@
     </parent>
 
     <artifactId>qa-web</artifactId>
-    <n>QA Web Tests - Blog do Agi</n>
+    <name>QA Web Tests - Blog do Agi</name>
 
     <dependencies>
         <!-- Selenium WebDriver -->
