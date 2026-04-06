@@ -4,6 +4,16 @@ Solução completa para o desafio técnico de **QA Sênior**, cobrindo automaç�
 
 ---
 
+## 📊 Relatórios de Execução
+
+| Módulo | Link |
+|--------|------|
+| 🌐 Web — Blog do Agi | [Ver relatório Allure](https://viniciuspessin.github.io/qaChallenge/allure-web) |
+| 🐶 API — Dog API | [Ver relatório Allure](https://viniciuspessin.github.io/qaChallenge/allure-api) |
+| ⚡ Performance — BlazDemo | [Ver relatório JMeter](https://viniciuspessin.github.io/qaChallenge/jmeter-report) |
+
+---
+
 ## 📁 Estrutura do Projeto
 
 ```
@@ -53,20 +63,16 @@ capitulo-qa-challenge/
 | 4 | Todos os artigos retornados devem possuir título visível (integridade) | 🟡 NORMAL |
 
 ### Padrões aplicados
-- **Page Object Model (POM)**: seletores e ações da página centralizados em `BlogSearchPage.java`, desacoplados dos testes.
-- **Fluent Interface**: encadeamento de ações legível (`.open().clickSearchIcon().typeSearchTerm(...).submitSearch()`).
-- **WebDriverManager**: gerencia o ChromeDriver automaticamente sem configuração manual.
-- **Headless Chrome**: executa sem interface gráfica — ideal para CI/CD.
+- **Page Object Model (POM)**: seletores e ações da página centralizados em `BlogSearchPage.java`
+- **Navegação direta via URL**: busca feita via `?s=termo` para máxima estabilidade em headless
+- **WebDriverManager**: gerencia o ChromeDriver automaticamente sem configuração manual
+- **Headless Chrome**: executa sem interface gráfica — ideal para CI/CD
 
 ### Como executar
 
 ```bash
-# Apenas testes web
 mvn test -pl qa-web
-
-# Com relatório Allure
-mvn test allure:report -pl qa-web
-# Relatório em: qa-web/target/site/allure-maven-plugin/index.html
+mvn allure:serve -pl qa-web
 ```
 
 ---
@@ -104,12 +110,8 @@ mvn test allure:report -pl qa-web
 ### Como executar
 
 ```bash
-# Apenas testes de API
 mvn test -pl qa-api
-
-# Com relatório Allure
-mvn test allure:report -pl qa-api
-# Relatório em: qa-api/target/site/allure-maven-plugin/index.html
+mvn allure:serve -pl qa-api
 ```
 
 ---
@@ -135,88 +137,27 @@ POST /confirmation.php      → Confirmação da compra ✅
 | **Load Test** | 250 | 60s | 5 por usuário | Validar comportamento em carga sustentada |
 | **Spike Test** | 250 | 5s | 3 por usuário | Validar resiliência em picos abruptos |
 
-### Asserções incluídas no .jmx
-- `HTTP 200` em todos os passos do fluxo
-- Presença do texto `"Choose Your Flight"` na página de seleção
-- Presença do texto `"Thank you for your purchase today!"` na confirmação
-- Extração dinâmica do `flight_id` via RegexExtractor (correlação)
-
 ### Como executar
 
 ```bash
-# Pré-requisito: JMeter instalado e no PATH
-
-# Modo não-gráfico (recomendado para CI)
 jmeter -n \
   -t qa-performance/jmeter/blazedemo-performance-tests.jmx \
   -l qa-performance/target/results.jtl \
   -e -o qa-performance/target/html-report
-
-# O relatório HTML ficará em: qa-performance/target/html-report/index.html
-
-# Modo gráfico (para desenvolvimento e visualização)
-jmeter -t qa-performance/jmeter/blazedemo-performance-tests.jmx
 ```
 
 ### 📊 Análise do Critério de Aceitação
 
-> **Conclusão:** O critério de 250 req/s com P90 < 2s é **desafiador** para o ambiente BlazDemo.
-
-O BlazDemo é um site de demonstração com infraestrutura limitada, sem garantia de SLA. Em execuções típicas:
-
-| Métrica | Resultado esperado (demo) | Critério |
-|---------|--------------------------|----------|
-| Throughput | ~50–120 req/s | 250 req/s |
-| P90 | ~2,5–6s | < 2s |
-
-**Motivos pelos quais o critério pode não ser atendido:**
-1. O servidor BlazDemo é compartilhado e de baixo custo — não suporta essa carga
-2. O fluxo de 4 passos com delays de think time reduz o throughput efetivo
-3. Limitações de rede e latência da máquina de execução
-
-**O que o teste comprova independentemente do resultado numérico:**
-- O script está corretamente estruturado com correlação de parâmetros dinâmicos
-- As asserções garantem que o fluxo de compra foi executado com sucesso
-- O relatório HTML do JMeter apresenta todos os percentis, erros e gráficos de carga
-
-Para atingir o critério em um ambiente de produção real, recomenda-se: infraestrutura dedicada, CDN, balanceamento de carga e otimização de queries.
+O critério de **250 req/s com P90 < 2s** é desafiador para o ambiente BlazDemo, que é um site de demonstração sem infraestrutura dedicada. O objetivo do teste é demonstrar a capacidade técnica de modelar o fluxo completo com correlação de parâmetros dinâmicos, load test, spike test e análise crítica dos resultados.
 
 ---
 
 ## 🚀 CI/CD
 
-### GitHub Actions
-Pipeline em `.github/workflows/ci.yml`:
-- **api-tests**: executa testes de API em qualquer push/PR
-- **web-tests**: executa testes Web com Chrome headless
-- **performance-tests**: executa JMeter apenas em merges para `main`
-- Artefatos: relatórios Allure e JUnit XML disponíveis em cada run
-
-### GitLab CI/CD
-Pipeline em `.gitlab-ci.yml`:
-- Stages: `test → report → performance`
-- Relatórios JUnit integrados ao GitLab Merge Requests
-- Cache do repositório Maven para builds mais rápidos
-
----
-
-## 📈 Relatórios
-
-### Allure Report (Web + API)
-```bash
-# Instalar Allure CLI (opcional — o plugin Maven já gera o relatório)
-npm install -g allure-commandline
-
-# Gerar e servir o relatório interativamente
-allure serve qa-api/target/allure-results
-allure serve qa-web/target/allure-results
-```
-
-O relatório Allure inclui:
-- Visão geral de status (passed/failed/broken)
-- Detalhes de cada teste com request/response capturados
-- Histórico de execuções
-- Categorização por Feature, Story e Severity
+Pipeline em `.github/workflows/ci.yml` com 3 jobs:
+- **api-tests**: testes de API + relatório Allure publicado no GitHub Pages
+- **web-tests**: testes Web com Chrome headless + relatório Allure publicado no GitHub Pages
+- **performance-tests**: JMeter executado em merges para `master` + relatório publicado no GitHub Pages
 
 ---
 
@@ -238,4 +179,4 @@ O relatório Allure inclui:
 
 ## 👤 Autor
 
-**Vinicius** — Desafio técnico QA Sênior — Capítulo Qualidade
+**Vinicius Pessin** — Desafio técnico QA Sênior — Capítulo Qualidade
