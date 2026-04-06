@@ -30,7 +30,7 @@ public class BlogSearchPage {
     // ── Seletores ─────────────────────────────────────────────────────────────
     private final By searchIcon  = By.cssSelector("a.slide-search.astra-search-icon");
 
-    private final By searchInput = By.cssSelector("form.search-form input[name='s']");
+    private final By searchInput = By.id("search-field");
 
     private final By resultsSection = By.cssSelector(".search-results, main, #main, .site-main");
 
