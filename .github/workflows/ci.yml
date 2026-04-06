@@ -1,7 +1,7 @@
 name: QA Automated Tests
 
 on:
-   workflow_dispatch:    # ← adiciona essa linha
+  workflow_dispatch:
   push:
     branches: [ main, develop ]
   pull_request:
