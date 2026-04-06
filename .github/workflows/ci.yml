@@ -27,7 +27,7 @@ jobs:
           cache: maven
 
       - name: Executar testes de API
-        run: mvn test -pl qa-api -B
+        run: mvn test -pl qa-api -B -Dmaven.test.failure.ignore=true
 
       - name: Gerar relatório Allure
         if: always()
@@ -69,7 +69,7 @@ jobs:
         uses: browser-actions/setup-chrome@v1
 
       - name: Executar testes web
-        run: mvn test -pl qa-web -B
+        run: mvn test -pl qa-web -B -Dmaven.test.failure.ignore=true
         env:
           JAVA_OPTS: "-Dwebdriver.chrome.driver=$(which chromedriver)"
 

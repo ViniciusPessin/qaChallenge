@@ -152,7 +152,7 @@ class BlogSearchTest extends BaseTest {
             "Pulando teste: nenhum resultado encontrado para '" + searchTerm + "'");
 
         items.forEach(item ->
-            assertThat(item.getText().trim())
+            assertThat(item.getAttribute("textContent").trim())
                 .as("Todos os resultados devem ter título não vazio")
                 .isNotBlank()
         );
