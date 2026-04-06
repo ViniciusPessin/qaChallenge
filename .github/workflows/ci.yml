@@ -47,6 +47,15 @@ jobs:
           name: test-results-api
           path: qa-api/target/surefire-reports/
 
+      - name: Deploy Allure Report no GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: qa-api/target/site/allure-maven-plugin
+          destination_dir: allure-api
+
+
   # ────────────────────────────────────────────────
   # JOB 2: Testes Web (Selenium + Chrome headless)
   # ────────────────────────────────────────────────
@@ -91,6 +100,14 @@ jobs:
           name: test-results-web
           path: qa-web/target/surefire-reports/
 
+      - name: Deploy Allure Report no GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: qa-api/target/site/allure-maven-plugin
+          destination_dir: allure-web
+
   # ────────────────────────────────────────────────
   # JOB 3: Testes de Performance (JMeter)
   # ────────────────────────────────────────────────
@@ -132,3 +149,4 @@ jobs:
         with:
           name: performance-test-report
           path: qa-performance/target/load-test-report/
+
