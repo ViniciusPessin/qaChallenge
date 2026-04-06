@@ -1,0 +1,133 @@
+name: QA Automated Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # ────────────────────────────────────────────────
+  # JOB 1: Testes de API (sem necessidade de browser)
+  # ────────────────────────────────────────────────
+  api-tests:
+    name: API Tests (Dog API)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Executar testes de API
+        run: mvn test -pl qa-api -B
+
+      - name: Gerar relatório Allure
+        if: always()
+        run: mvn allure:report -pl qa-api -B
+
+      - name: Upload relatório Allure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-api
+          path: qa-api/target/site/allure-maven-plugin/
+
+      - name: Upload resultados de teste (JUnit XML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-api
+          path: qa-api/target/surefire-reports/
+
+  # ────────────────────────────────────────────────
+  # JOB 2: Testes Web (Selenium + Chrome headless)
+  # ────────────────────────────────────────────────
+  web-tests:
+    name: Web Tests (Blog do Agi)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: maven
+
+      - name: Instalar Google Chrome
+        uses: browser-actions/setup-chrome@v1
+
+      - name: Executar testes web
+        run: mvn test -pl qa-web -B
+        env:
+          JAVA_OPTS: "-Dwebdriver.chrome.driver=$(which chromedriver)"
+
+      - name: Gerar relatório Allure
+        if: always()
+        run: mvn allure:report -pl qa-web -B
+
+      - name: Upload relatório Allure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-report-web
+          path: qa-web/target/site/allure-maven-plugin/
+
+      - name: Upload resultados de teste (JUnit XML)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-web
+          path: qa-web/target/surefire-reports/
+
+  # ────────────────────────────────────────────────
+  # JOB 3: Testes de Performance (JMeter)
+  # ────────────────────────────────────────────────
+  performance-tests:
+    name: Performance Tests (BlazDemo)
+    runs-on: ubuntu-latest
+    # Roda apenas na branch main para não sobrecarregar o servidor alvo em PRs
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v4
+
+      - name: Configurar JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Instalar JMeter
+        run: |
+          wget -q https://archive.apache.org/dist/jmeter/binaries/apache-jmeter-5.6.3.tgz
+          tar -xzf apache-jmeter-5.6.3.tgz
+          echo "JMETER_HOME=$(pwd)/apache-jmeter-5.6.3" >> $GITHUB_ENV
+          echo "$(pwd)/apache-jmeter-5.6.3/bin" >> $GITHUB_PATH
+
+      - name: Executar Load Test
+        run: |
+          mkdir -p qa-performance/target
+          jmeter -n \
+            -t qa-performance/jmeter/blazedemo-performance-tests.jmx \
+            -l qa-performance/target/load-test-results.jtl \
+            -e -o qa-performance/target/load-test-report \
+            -Jjmeter.save.saveservice.output_format=csv
+
+      - name: Upload relatório de performance
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-test-report
+          path: qa-performance/target/load-test-report/

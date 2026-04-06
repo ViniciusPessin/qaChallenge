@@ -1,0 +1,98 @@
+image: maven:3.9.6-eclipse-temurin-17
+
+# Cache do Maven para acelerar os builds
+cache:
+  key: maven-cache
+  paths:
+    - .m2/repository
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=$CI_PROJECT_DIR/.m2/repository -Xmx1024m"
+  MAVEN_CLI_OPTS: "--batch-mode --no-transfer-progress"
+
+stages:
+  - test
+  - report
+  - performance
+
+# ────────────────────────────────────────────────
+# STAGE 1: Testes de API
+# ────────────────────────────────────────────────
+api-tests:
+  stage: test
+  script:
+    - mvn $MAVEN_CLI_OPTS test -pl qa-api
+  artifacts:
+    when: always
+    reports:
+      junit: qa-api/target/surefire-reports/TEST-*.xml
+    paths:
+      - qa-api/target/allure-results/
+      - qa-api/target/surefire-reports/
+    expire_in: 7 days
+  tags:
+    - docker
+
+# ────────────────────────────────────────────────
+# STAGE 1: Testes Web
+# ────────────────────────────────────────────────
+web-tests:
+  stage: test
+  image: selenium/standalone-chrome:latest
+  before_script:
+    - apt-get update -q && apt-get install -y -q maven openjdk-17-jdk
+    - export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
+  script:
+    - mvn $MAVEN_CLI_OPTS test -pl qa-web
+  artifacts:
+    when: always
+    reports:
+      junit: qa-web/target/surefire-reports/TEST-*.xml
+    paths:
+      - qa-web/target/allure-results/
+      - qa-web/target/surefire-reports/
+    expire_in: 7 days
+  tags:
+    - docker
+
+# ────────────────────────────────────────────────
+# STAGE 2: Geração de Relatórios Allure
+# ────────────────────────────────────────────────
+allure-report:
+  stage: report
+  script:
+    - mvn $MAVEN_CLI_OPTS allure:report -pl qa-api
+    - mvn $MAVEN_CLI_OPTS allure:report -pl qa-web
+  artifacts:
+    paths:
+      - qa-api/target/site/allure-maven-plugin/
+      - qa-web/target/site/allure-maven-plugin/
+    expire_in: 30 days
+  needs:
+    - api-tests
+    - web-tests
+  when: always
+  tags:
+    - docker
+
+# ────────────────────────────────────────────────
+# STAGE 3: Testes de Performance (apenas em main)
+# ────────────────────────────────────────────────
+performance-tests:
+  stage: performance
+  image: justb4/jmeter:5.5
+  only:
+    - main
+  script:
+    - mkdir -p qa-performance/target
+    - jmeter -n
+        -t qa-performance/jmeter/blazedemo-performance-tests.jmx
+        -l qa-performance/target/results.jtl
+        -e -o qa-performance/target/html-report
+  artifacts:
+    paths:
+      - qa-performance/target/html-report/
+      - qa-performance/target/results.jtl
+    expire_in: 30 days
+  tags:
+    - docker
