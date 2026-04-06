@@ -20,7 +20,7 @@ public class BlogSearchPage {
     private static final String BASE_URL = "https://blogdoagi.com.br/";
 
     // ── Seletores ─────────────────────────────────────────────────────────────
-    private final By searchIcon  = By.cssSelector("a.slide-search.astra-search-icon");
+    private final By searchIcon  = By.cssSelector(".ast-search-menu-icon a, button.search-toggle, .search-icon");
 
     private final By searchInput = By.id("search-field");
 
@@ -44,27 +44,21 @@ public class BlogSearchPage {
     }
 
     public BlogSearchPage clickSearchIcon() {
-    try {
-        WebElement icon = wait.until(
-            ExpectedConditions.elementToBeClickable(
-                By.cssSelector(".ast-search-menu-icon a")));
-        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
-        
-        wait.until(ExpectedConditions.presenceOfElementLocated(
-            By.cssSelector(".ast-search-menu-icon.ast-dropdown-active")));
-    } catch (Exception e) {
-        System.out.println("[INFO] " + e.getMessage());
+        WebElement icon = wait.until(ExpectedConditions.elementToBeClickable(searchIcon));
+        try {
+            icon.click();
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
+        }
+        return this;
     }
-    return this;
-}
 
-public BlogSearchPage typeSearchTerm(String term) {
-    WebElement input = wait.until(
-        ExpectedConditions.visibilityOfElementLocated(By.id("search-field")));
-    input.clear();
-    input.sendKeys(term);
-    return this;
-}
+    public BlogSearchPage typeSearchTerm(String term) {
+        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        input.clear();
+        input.sendKeys(term);
+        return this;
+    }
 
     public BlogSearchPage submitSearch() {
         WebElement input = driver.findElement(searchInput);
