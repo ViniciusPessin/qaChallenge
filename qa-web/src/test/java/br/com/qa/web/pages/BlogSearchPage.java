@@ -6,6 +6,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.JavascriptExecutor;
 
 import java.time.Duration;
 import java.util.List;
@@ -27,15 +28,14 @@ public class BlogSearchPage {
     private static final String BASE_URL = "https://blogdoagi.com.br/";
 
     // ── Seletores ─────────────────────────────────────────────────────────────
-    // Ícone de lupa (abre o campo de busca) no canto superior direito
-    private final By searchIcon    = By.cssSelector("button.search-toggle, .search-icon, [aria-label='Buscar'], [aria-label='Search'], .dashicons-search");
-    // Campo de input de texto da busca
-    private final By searchInput   = By.cssSelector("input[type='search'], input.search-field, input[name='s']");
-    // Contêiner geral dos resultados de busca
+    private final By searchIcon  = By.cssSelector("a.slide-search.astra-search-icon");
+
+    private final By searchInput = By.cssSelector("form.search-form input[name='s']");
+
     private final By resultsSection = By.cssSelector(".search-results, main, #main, .site-main");
-    // Itens individuais de resultado (artigos)
+
     private final By resultItems   = By.cssSelector("article.post, .post-item, .search-result, h2.entry-title, h3.entry-title");
-    // Mensagem exibida quando não há resultados
+
     private final By noResultsMsg  = By.cssSelector(".no-results, .not-found, .nothing-found, p.search-no-results");
 
     // ── Construtor ────────────────────────────────────────────────────────────
@@ -46,25 +46,23 @@ public class BlogSearchPage {
 
     // ── Ações ─────────────────────────────────────────────────────────────────
 
-    /** Abre a página inicial do blog. */
     public BlogSearchPage open() {
         driver.get(BASE_URL);
         return this;
     }
 
-    /** Clica no ícone de lupa para revelar o campo de busca. */
     public BlogSearchPage clickSearchIcon() {
-        try {
-            WebElement icon = wait.until(ExpectedConditions.elementToBeClickable(searchIcon));
-            icon.click();
-        } catch (Exception e) {
-            // Alguns temas WordPress já exibem o campo diretamente — ignora se a lupa não existir
-            System.out.println("[INFO] Ícone de busca não encontrado ou já visível, continuando...");
-        }
-        return this;
+    try {
+        WebElement icon = wait.until(ExpectedConditions.elementToBeClickable(searchIcon));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
+        // aguarda o input ficar visível após o clique
+        wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+    } catch (Exception e) {
+        System.out.println("[INFO] Ícone de busca não encontrado, continuando...");
     }
+    return this;
+}
 
-    /** Digita o termo no campo de busca. */
     public BlogSearchPage typeSearchTerm(String term) {
         WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
         input.clear();
@@ -72,7 +70,6 @@ public class BlogSearchPage {
         return this;
     }
 
-    /** Submete a busca pressionando ENTER. */
     public BlogSearchPage submitSearch() {
         WebElement input = driver.findElement(searchInput);
         input.sendKeys(Keys.ENTER);
@@ -82,7 +79,6 @@ public class BlogSearchPage {
 
     // ── Consultas ─────────────────────────────────────────────────────────────
 
-    /** Retorna os itens de resultado encontrados na página. */
     public List<WebElement> getResultItems() {
         try {
             wait.until(ExpectedConditions.presenceOfAllElementsLocatedBy(resultItems));
@@ -92,7 +88,6 @@ public class BlogSearchPage {
         }
     }
 
-    /** Retorna true se a mensagem "nenhum resultado" estiver visível. */
     public boolean isNoResultsMessageDisplayed() {
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(noResultsMsg));
@@ -102,19 +97,16 @@ public class BlogSearchPage {
         }
     }
 
-    /** Retorna o título do primeiro resultado encontrado. */
     public String getFirstResultTitle() {
         List<WebElement> items = getResultItems();
         if (items.isEmpty()) return "";
         return items.get(0).getText().trim();
     }
 
-    /** Retorna a URL atual (útil para verificar redirect após busca). */
     public String getCurrentUrl() {
         return driver.getCurrentUrl();
     }
 
-    /** Retorna o número de resultados na página. */
     public int getResultCount() {
         return getResultItems().size();
     }

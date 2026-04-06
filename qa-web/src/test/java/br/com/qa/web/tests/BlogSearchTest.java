@@ -42,17 +42,14 @@ class BlogSearchTest extends BaseTest {
     @Description("Ao buscar por um termo relevante ao domínio financeiro (crédito), " +
                  "o blog deve exibir artigos correspondentes na página de resultados.")
     void deveBuscarTermoValidoERetornarResultados() {
-        // Arrange
         String searchTerm = "crédito";
 
-        // Act
         searchPage
             .open()
             .clickSearchIcon()
             .typeSearchTerm(searchTerm)
             .submitSearch();
 
-        // Assert
         int resultCount = searchPage.getResultCount();
 
         assertThat(resultCount)
@@ -79,17 +76,14 @@ class BlogSearchTest extends BaseTest {
     @Description("Ao buscar por uma string aleatória e sem sentido, " +
                  "o blog deve indicar ao usuário que não há artigos correspondentes.")
     void deveBuscarTermoInvalidoEExibirMensagemSemResultado() {
-        // Arrange
         String invalidTerm = "xyzxyz99999qaqaqa";
 
-        // Act
         searchPage
             .open()
             .clickSearchIcon()
             .typeSearchTerm(invalidTerm)
             .submitSearch();
 
-        // Assert — nenhum artigo deve aparecer
         int resultCount = searchPage.getResultCount();
         boolean noResultsShown = searchPage.isNoResultsMessageDisplayed();
 
@@ -112,17 +106,14 @@ class BlogSearchTest extends BaseTest {
     @Description("Após submeter uma busca, a URL deve refletir o termo digitado no parâmetro 's', " +
                  "garantindo rastreabilidade e possibilidade de bookmarking.")
     void urlDeveConterParametroDeBusca() {
-        // Arrange
         String searchTerm = "investimento";
 
-        // Act
         searchPage
             .open()
             .clickSearchIcon()
             .typeSearchTerm(searchTerm)
             .submitSearch();
 
-        // Assert
         String currentUrl = searchPage.getCurrentUrl();
 
         assertThat(currentUrl)
@@ -147,17 +138,14 @@ class BlogSearchTest extends BaseTest {
     @Description("Cada card de artigo exibido nos resultados de busca deve ter um título " +
                  "visível e não vazio, garantindo a integridade da renderização do template.")
     void todosResultadosDevemTerTituloNaoVazio() {
-        // Arrange
         String searchTerm = "financiamento";
 
-        // Act
         searchPage
             .open()
             .clickSearchIcon()
             .typeSearchTerm(searchTerm)
             .submitSearch();
 
-        // Assert
         var items = searchPage.getResultItems();
 
         Assumptions.assumeTrue(!items.isEmpty(),

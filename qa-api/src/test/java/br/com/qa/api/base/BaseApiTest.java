@@ -10,7 +10,6 @@ import org.junit.jupiter.api.BeforeAll;
 
 /**
  * Classe base para todos os testes de API.
- * Configura a spec base do RestAssured com: URL base, headers, log e Allure filter.
  */
 public abstract class BaseApiTest {
 
@@ -26,8 +25,8 @@ public abstract class BaseApiTest {
             .setBasePath(BASE_PATH)
             .setContentType(ContentType.JSON)
             .setAccept(ContentType.JSON)
-            .addFilter(new AllureRestAssured())          // Captura req/resp no relatório Allure
-            .log(LogDetail.ALL)                          // Log completo no console
+            .addFilter(new AllureRestAssured())
+            .log(LogDetail.ALL)                          
             .build();
 
         RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();

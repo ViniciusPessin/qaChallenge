@@ -9,10 +9,6 @@ import org.openqa.selenium.chrome.ChromeOptions;
 
 import java.time.Duration;
 
-/**
- * Classe base para todos os testes web.
- * Gerencia o ciclo de vida do WebDriver (abertura e fechamento).
- */
 public abstract class BaseTest {
 
     protected WebDriver driver;
@@ -22,7 +18,7 @@ public abstract class BaseTest {
         WebDriverManager.chromedriver().setup();
 
         ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");    // modo sem interface gráfica (CI/CD)
+        options.addArguments("--headless=new"); 
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
         options.addArguments("--disable-gpu");

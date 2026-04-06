@@ -22,9 +22,6 @@ import static org.hamcrest.Matchers.*;
  *  - GET /breed/{breed}/images
  *  - GET /breeds/image/random
  *
- * Estratégia:
- *  Cada teste valida: status HTTP, estrutura do JSON, tipos dos campos
- *  e regras de negócio (ex.: URL de imagem deve ser válida).
  */
 @Epic("Dog API")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
