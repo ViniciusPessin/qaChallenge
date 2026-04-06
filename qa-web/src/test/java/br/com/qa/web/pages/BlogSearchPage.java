@@ -11,14 +11,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import java.time.Duration;
 import java.util.List;
 
-/**
- * Page Object que representa a funcionalidade de busca do Blog do Agi.
- *
- * URL: https://blogdoagi.com.br/
- *
- * O padrão Page Object centraliza os seletores e ações da página,
- * desacoplando-os dos testes e facilitando a manutenção.
- */
 public class BlogSearchPage {
 
     private final WebDriver driver;
