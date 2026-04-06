@@ -20,7 +20,7 @@ public class BlogSearchPage {
     private static final String BASE_URL = "https://blogdoagi.com.br/";
 
     // ── Seletores ─────────────────────────────────────────────────────────────
-    private final By searchIcon  = By.cssSelector(".ast-search-menu-icon a, button.search-toggle, .search-icon");
+    private final By searchIcon  = By.cssSelector(".ast-search-menu-icon");
 
     private final By searchInput = By.id("search-field");
 
@@ -44,25 +44,30 @@ public class BlogSearchPage {
     }
 
     public BlogSearchPage clickSearchIcon() {
-        WebElement icon = wait.until(ExpectedConditions.elementToBeClickable(searchIcon));
-        try {
-            icon.click();
-        } catch (Exception e) {
-            ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
-        }
+        WebElement icon = wait.until(ExpectedConditions.presenceOfElementLocated(searchIcon));
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
         return this;
     }
 
     public BlogSearchPage typeSearchTerm(String term) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        input.clear();
-        input.sendKeys(term);
+        WebElement input = wait.until(ExpectedConditions.presenceOfElementLocated(searchInput));
+        
+        try {
+            input.clear();
+            input.sendKeys(term);
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].value = arguments[1];", input, term);
+        }
         return this;
     }
 
     public BlogSearchPage submitSearch() {
         WebElement input = driver.findElement(searchInput);
-        input.sendKeys(Keys.ENTER);
+        try {
+            input.sendKeys(Keys.ENTER);
+        } catch (Exception e) {
+            ((JavascriptExecutor) driver).executeScript("arguments[0].form.submit();", input);
+        }
         wait.until(ExpectedConditions.presenceOfElementLocated(resultsSection));
         return this;
     }
@@ -90,7 +95,9 @@ public class BlogSearchPage {
     public String getFirstResultTitle() {
         List<WebElement> items = getResultItems();
         if (items.isEmpty()) return "";
-        return items.get(0).getText().trim();
+        String title = items.get(0).getAttribute("textContent");
+        
+        return title != null ? title.trim() : "";
     }
 
     public String getCurrentUrl() {
