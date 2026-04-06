@@ -53,22 +53,26 @@ public class BlogSearchPage {
 
     public BlogSearchPage clickSearchIcon() {
     try {
-        WebElement icon = wait.until(ExpectedConditions.elementToBeClickable(searchIcon));
+        WebElement icon = wait.until(
+            ExpectedConditions.elementToBeClickable(
+                By.cssSelector(".ast-search-menu-icon a")));
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", icon);
-        // aguarda o input ficar visível após o clique
-        wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
+        
+        wait.until(ExpectedConditions.presenceOfElementLocated(
+            By.cssSelector(".ast-search-menu-icon.ast-dropdown-active")));
     } catch (Exception e) {
-        System.out.println("[INFO] Ícone de busca não encontrado, continuando...");
+        System.out.println("[INFO] " + e.getMessage());
     }
     return this;
 }
 
-    public BlogSearchPage typeSearchTerm(String term) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchInput));
-        input.clear();
-        input.sendKeys(term);
-        return this;
-    }
+public BlogSearchPage typeSearchTerm(String term) {
+    WebElement input = wait.until(
+        ExpectedConditions.visibilityOfElementLocated(By.id("search-field")));
+    input.clear();
+    input.sendKeys(term);
+    return this;
+}
 
     public BlogSearchPage submitSearch() {
         WebElement input = driver.findElement(searchInput);
